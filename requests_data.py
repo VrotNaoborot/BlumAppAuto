@@ -397,3 +397,82 @@ def get_new_token(query_id, proxy):
             return None
     print(f"{Fore.CYAN}Три попытки получить токен не увенчались успехом.")
     return None
+
+
+def play_game(token, proxy):
+    headers = {
+        'content-length': '0',
+        'accept': 'application/json, text/plain, */*',
+        'authorization': "Bearer " + token,
+        'user-agent': useragent,
+        'origin': 'https://telegram.blum.codes',
+        'x-requested-with': 'org.telegram.messenger.web',
+        'sec-fetch-site': 'same-site',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        'accept-encoding': 'gzip, deflate',
+        'accept-language': 'ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7'
+    }
+    url = 'https://game-domain.blum.codes/api/v1/game/play'
+    try:
+        if proxy is None:
+            response = requests.post(url, headers=headers)
+        else:
+            response = requests.post(url, headers=headers, proxies=proxy)
+        response.raise_for_status()
+        return response.json()
+    except json.JSONDecodeError as j:
+        print(f"{Fore.RED}Ошибка при декодировании JSON ответа: {j}")
+        return None
+    except requests.HTTPError as http_err:
+        print(f"{Fore.RED}HTTP ошибка: {http_err}")
+        return None
+    except requests.RequestException as req_err:
+        print(f"{Fore.RED}Ошибка запроса: {req_err}")
+        return None
+    except Exception as ex:
+        print(f"{Fore.RED}Неизвестная ошибка: {ex}")
+        return None
+
+
+def claim_game(token, proxy, game_id, points):
+    headers = {
+        'accept': 'application/json, text/plain, */*',
+        'authorization': "Bearer " + token,
+        'user-agent': useragent,
+        'origin': 'https://telegram.blum.codes',
+        'x-requested-with': 'org.telegram.messenger.web',
+        'sec-fetch-site': 'same-site',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        'accept-encoding': 'gzip, deflate',
+        'accept-language': 'ru,ru-RU;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type': 'application/json'
+    }
+    url = 'https://game-domain.blum.codes/api/v1/game/claim'
+    data_json = json.dumps(
+        {
+            "gameId": game_id,
+            "points": points
+        }
+    )
+    print(data_json)
+    try:
+        if proxy is None:
+            response = requests.post(url, headers=headers, data=data_json)
+        else:
+            response = requests.post(url, headers=headers, data=data_json, proxies=proxy)
+        response.raise_for_status()
+        return response.text
+    except json.JSONDecodeError as j:
+        print(f"{Fore.RED}Ошибка при декодировании JSON ответа: {j}")
+        return None
+    except requests.HTTPError as http_err:
+        print(f"{Fore.RED}HTTP ошибка: {http_err}")
+        return None
+    except requests.RequestException as req_err:
+        print(f"{Fore.RED}Ошибка запроса: {req_err}")
+        return None
+    except Exception as ex:
+        print(f"{Fore.RED}Неизвестная ошибка: {ex}")
+        return None

@@ -72,7 +72,7 @@ def main():
             if response is not None:
                 print(f"{Fore.CYAN}[ BALANCE ] Баланс: {response.get('availableBalance', 'Нет данных')} токенов")
                 tickets = response.get('playPasses', -1)
-                print(f"{Fore.CYAN}[ BALANCE ] Билеты: {response.get(tickets)} билетов")
+                print(f"{Fore.CYAN}[ BALANCE ] Билеты: {tickets} билетов")
                 # если фарминг уже идет, или закончился
                 if 'farming' in response:
                     farming_end = datetime.fromtimestamp(response['farming']['endTime'] // 1000)
@@ -106,7 +106,25 @@ def main():
 
             if tickets is not None:
                 while tickets > 0:
-                    pass
+                    print(f"{Fore.CYAN}[ GAME ] Начинаем игру...")
+                    game_start = play_game(access_token, proxy)
+                    print(f"{Fore.CYAN}[ GAME ] Проверяем ответ от сервера..")
+                    if game_start is not None and 'gameId' in game_start:
+                        game_id = game_start['gameId']
+                        print(f"{Fore.CYAN}[ GAME ] Игра началась")
+                        time.sleep(random.randint(30, 35))
+                        points = random.randint(180, 300)
+
+                        game_claim = claim_game(access_token, proxy, game_id, points)
+                        if game_claim is not None:
+                            if game_claim == "OK":
+                                print(f"{Fore.CYAN}[ GAME ] Получено {points} токенов")
+                                tickets -= 1
+                    else:
+                        print(f"{Fore.CYAN}[ ERROR ] Не удалось получить ответ от сервера.")
+                        break
+                else:
+                    print(f"{Fore.CYAN}[ GAME ] Тикеты закончились")
 
             print(f"{Fore.CYAN}{'=' * 40}\n\n")
 
@@ -116,11 +134,11 @@ def main():
                 writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=';')
                 writer.writeheader()
                 writer.writerows(data)
-                print(f"{Fore.LIGHTYELLOW_EX}{'=' * 40}")
+                print(f"{Fore.LIGHTYELLOW_EX}{'=' * 30}")
                 print(f"{Fore.LIGHTYELLOW_EX}Токены записаны.")
         else:
-            print(f"{Fore.LIGHTYELLOW_EX}{'=' * 40}")
-        print(f"{Fore.LIGHTYELLOW_EX}Спим: {max_delay}\n{'=' * 40}")
+            print(f"{Fore.LIGHTYELLOW_EX}{'=' * 30}")
+        print(f"{Fore.LIGHTYELLOW_EX}Спим: {max_delay}\n{'=' * 300}")
         time.sleep(max_delay)
         max_delay = 0
 
