@@ -67,10 +67,46 @@ def main():
             view_daily_reward(access_token, proxy)
 
             time.sleep(1)
-            time_for_finish = view_balance_user(access_token, proxy)
+            response = user_balance(access_token, proxy)
+            tickets = None
+            if response is not None:
+                print(f"{Fore.CYAN}[ BALANCE ] Баланс: {response.get('availableBalance', 'Нет данных')} токенов")
+                tickets = response.get('playPasses', -1)
+                print(f"{Fore.CYAN}[ BALANCE ] Билеты: {response.get(tickets)} билетов")
+                # если фарминг уже идет, или закончился
+                if 'farming' in response:
+                    farming_end = datetime.fromtimestamp(response['farming']['endTime'] // 1000)
+                    if farming_end < datetime.now():
+                        print(f"{Fore.CYAN}[ FARMING ] Фарминг закончился")
+                        farming_resp = farming_start(access_token, proxy)
+                        if farming_resp is not None:
+                            if 'startTime' in farming_resp:
+                                print(f"{Fore.CYAN}[ FARMING ] Фарминг начался.")
+                                farming_end = datetime.fromtimestamp(farming_resp['endTime'] // 1000)
+                                time_second_end = (farming_end - datetime.now()).total_seconds()
+                                if time_second_end > max_delay:
+                                    max_delay = time_second_end
+                        else:
+                            print(f"{Fore.CYAN}[ FARMING ] Не удалось начать фарминг.")
+                    else:
+                        print(f"{Fore.CYAN}[ FARMING ] Фарминг еще не закончился. Конец: {farming_end}")
+                        time_second_end = (farming_end - datetime.now()).total_seconds()
+                        if time_second_end > max_delay:
+                            max_delay = time_second_end
+                # если фарминг еще не начат
+                else:
+                    farming_resp = farming_start(access_token, proxy)
+                    if farming_resp is not None:
+                        if 'startTime' in farming_resp:
+                            print(f"{Fore.CYAN}[ FARMING ] Фарминг начался.")
+                            farming_end = datetime.fromtimestamp(farming_resp['endTime'] // 1000)
+                            time_second_end = (farming_end - datetime.now()).total_seconds()
+                            if time_second_end > max_delay:
+                                max_delay = time_second_end
 
-            if time_for_finish > 0 and time_for_finish > max_delay:
-                max_delay = time_for_finish
+            if tickets is not None:
+                while tickets > 0:
+                    pass
 
             print(f"{Fore.CYAN}{'=' * 40}\n\n")
 

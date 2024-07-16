@@ -2,40 +2,6 @@ from requests_data import *
 from datetime import datetime
 
 
-def view_balance_user(token, proxy):
-    """Возвращает время до конца фарминга"""
-    response = user_balance(token, proxy)
-    if response is not None:
-        print(f"{Fore.CYAN}[ BALANCE ] Баланс: {response.get('availableBalance', 'Нет данных')} токенов")
-        print(f"{Fore.CYAN}[ BALANCE ] Билеты: {response.get('playPasses', 'Нет данных')} билетов")
-        if 'farming' in response:
-            farming_end = datetime.fromtimestamp(response['farming']['endTime'] // 1000)
-            if farming_end < datetime.now():
-                print(f"{Fore.CYAN}[ FARMING ] Фарминг закончился")
-                farming_resp = farming_start(token, proxy)
-                if farming_resp is not None:
-                    if 'startTime' in farming_resp:
-                        print(f"{Fore.CYAN}[ FARMING ] Фарминг начался.")
-                        farming_end = datetime.fromtimestamp(farming_resp['endTime'] // 1000)
-                        return (farming_end - datetime.now()).total_seconds()
-                else:
-                    print(f"{Fore.CYAN}[ FARMING ] Не удалось начать фарминг.")
-                return -1
-            else:
-                print(f"{Fore.CYAN}[ FARMING ] Фарминг еще не закончился. Конец: {farming_end}")
-                seconds_for_finish = farming_end - datetime.now()
-                return seconds_for_finish.total_seconds()
-        else:
-            farming_resp = farming_start(token, proxy)
-            if farming_resp is not None:
-                if 'startTime' in farming_resp:
-                    print(f"{Fore.CYAN}[ FARMING ] Фарминг начался.")
-                    farming_end = datetime.fromtimestamp(farming_resp['endTime'] // 1000)
-                    return (farming_end - datetime.now()).total_seconds()
-    else:
-        return -1
-
-
 def view_balance_friends(token, proxy):
     response = friends_balance(token, proxy)
     if response is not None:
